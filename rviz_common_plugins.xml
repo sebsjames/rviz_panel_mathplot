@@ -1,0 +1,5 @@
+<library path="mathplot_panel">
+  <class type="rviz_panel_mathplot::MathplotPanel" base_class_type="rviz_common::Panel">
+    <description>A panel for some mathplot graphics</description>
+  </class>
+</library>
