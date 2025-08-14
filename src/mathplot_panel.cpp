@@ -39,19 +39,22 @@
 #include <QVBoxLayout>
 #include <rviz_common/display_context.hpp>
 #include <rviz_panel_mathplot/mathplot_panel.hpp>
+#include <sm/vec>
 #include <sm/vvec>
 #include <mplot/qt/viswidget_mx.h>
+#include <mplot/GraphVisual.h>
 
 namespace rviz_panel_mathplot
 {
+    static constexpr int VWID = 0;
+
     MathplotPanel::MathplotPanel (QWidget * parent) : Panel(parent)
     {
         // Create a label and a button, displayed vertically (the V in VBox means vertical)
         auto layout = new QVBoxLayout(this);
-        parent_ = parent;
         label_ = new QLabel("[no data]");
         button_ = new QPushButton("GO!");
-        layout->addWidget(label_);
+        //layout->addWidget(label_);
         this->viswidget_init (layout);
         layout->addWidget(button_);
 
@@ -90,17 +93,37 @@ namespace rviz_panel_mathplot
         auto message = std_msgs::msg::String();
         message.data = "Button clicked!";
         publisher_->publish(message);
+
+        std::cout << "Adding a GraphVisual...\n";
+
+        auto gv = std::make_unique<mplot::GraphVisual<double, mplot::qt::gl_version>> (this->graphlocn);
+        // Bind the new (Graph)VisualModel to the mplot::Visual associated with the viswidget
+        static_cast<mplot::qt::viswidget_mx<VWID>*>(this->p_vw)->v.bindmodel (gv);
+
+        gv->twodimensional = false;
+        sm::vvec<double> x;
+        x.linspace (-1.5, 1.5, 25);
+        gv->setdata (x, x.pow(2));
+
+        // Cast and add
+        std::unique_ptr<mplot::VisualModel<mplot::qt::gl_version>> vmp = std::move (gv);
+        static_cast<mplot::qt::viswidget_mx<VWID>*>(this->p_vw)->newvisualmodels.push_back (std::move(vmp));
+
+        // request a render, otherwise it won't appear until user interacts with window
+        this->p_vw->update();
+
+        // Change the graphlocn so that the next graph shows up in a different place
+        this->graphlocn[1] += 1.2f;
     }
 
-    void MathplotPanel::viswidget_init (QVBoxLayout* owner)
+    void MathplotPanel::viswidget_init (QLayout* owner_layout)
     {
         // Create widget. Seems to open in its own window with a new context.
-        mplot::qt::viswidget_mx<0>* vw = new mplot::qt::viswidget_mx<0> (this->parentWidget());
+        mplot::qt::viswidget_mx<VWID>* vw = new mplot::qt::viswidget_mx<VWID> (this->parentWidget());
         // Choose lighting effects if you want
         vw->v.lightingEffects();
         // Add the OpenGL widget to the UI.
-        owner->addWidget (vw); // For a Ui::
-
+        owner_layout->addWidget (vw);
         // Keep a copy of vw
         this->p_vw = vw;
     }

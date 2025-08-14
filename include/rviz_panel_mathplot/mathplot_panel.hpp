@@ -44,9 +44,10 @@
 #include <rviz_common/panel.hpp>
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <sm/vec>
 
 class QOpenGLWidget;
-class QVBoxLayout;
+class QLayout;
 
 namespace rviz_panel_mathplot
 {
@@ -67,14 +68,16 @@ namespace rviz_panel_mathplot
         void topicCallback (const std_msgs::msg::String& msg);
 
         // Initialise your mplot::viswidget. In this example, one widget is created and
-        // added to the UI.
-        void viswidget_init (QVBoxLayout* owner);
+        // added to a layout.
+        void viswidget_init (QLayout* owner_layout);
 
         // A pointer to your mplot::qt::viswidget, which is a part of your overall Qt Window
-        QWidget* parent_;
         QOpenGLWidget* p_vw = nullptr;
         QLabel* label_;
         QPushButton* button_;
+
+        // A location for a graph within the Visual scene inside the viswidget
+        sm::vec<float, 3> graphlocn = {1.5f, 0.0f, 0.0f};
 
     private Q_SLOTS:
         void buttonActivated();
