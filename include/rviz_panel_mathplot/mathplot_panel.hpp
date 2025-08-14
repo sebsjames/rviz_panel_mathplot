@@ -45,13 +45,16 @@
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <std_msgs/msg/string.hpp>
 
+class QOpenGLWidget;
+class QVBoxLayout;
+
 namespace rviz_panel_mathplot
 {
     class MathplotPanel : public rviz_common::Panel
     {
         Q_OBJECT
     public:
-        explicit MathplotPanel(QWidget* parent = 0);
+        explicit MathplotPanel (QWidget* parent = 0);
         ~MathplotPanel() override;
 
         void onInitialize() override;
@@ -63,6 +66,13 @@ namespace rviz_panel_mathplot
 
         void topicCallback (const std_msgs::msg::String& msg);
 
+        // Initialise your mplot::viswidget. In this example, one widget is created and
+        // added to the UI.
+        void viswidget_init (QVBoxLayout* owner);
+
+        // A pointer to your mplot::qt::viswidget, which is a part of your overall Qt Window
+        QWidget* parent_;
+        QOpenGLWidget* p_vw = nullptr;
         QLabel* label_;
         QPushButton* button_;
 

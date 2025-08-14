@@ -39,16 +39,20 @@
 #include <QVBoxLayout>
 #include <rviz_common/display_context.hpp>
 #include <rviz_panel_mathplot/mathplot_panel.hpp>
+#include <sm/vvec>
+#include <mplot/qt/viswidget_mx.h>
 
 namespace rviz_panel_mathplot
 {
     MathplotPanel::MathplotPanel (QWidget * parent) : Panel(parent)
     {
         // Create a label and a button, displayed vertically (the V in VBox means vertical)
-        const auto layout = new QVBoxLayout(this);
+        auto layout = new QVBoxLayout(this);
+        parent_ = parent;
         label_ = new QLabel("[no data]");
         button_ = new QPushButton("GO!");
         layout->addWidget(label_);
+        this->viswidget_init (layout);
         layout->addWidget(button_);
 
         // Connect the event of when the button is released to our callback,
@@ -86,6 +90,19 @@ namespace rviz_panel_mathplot
         auto message = std_msgs::msg::String();
         message.data = "Button clicked!";
         publisher_->publish(message);
+    }
+
+    void MathplotPanel::viswidget_init (QVBoxLayout* owner)
+    {
+        // Create widget. Seems to open in its own window with a new context.
+        mplot::qt::viswidget_mx<0>* vw = new mplot::qt::viswidget_mx<0> (this->parentWidget());
+        // Choose lighting effects if you want
+        vw->v.lightingEffects();
+        // Add the OpenGL widget to the UI.
+        owner->addWidget (vw); // For a Ui::
+
+        // Keep a copy of vw
+        this->p_vw = vw;
     }
 
 }  // namespace rviz_panel_mathplot

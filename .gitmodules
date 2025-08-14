@@ -1,0 +1,6 @@
+[submodule "mathplot"]
+	path = mathplot
+	url = https://github.com/sebsjames/mathplot
+[submodule "maths"]
+	path = maths
+	url = https://github.com/sebsjames/maths
