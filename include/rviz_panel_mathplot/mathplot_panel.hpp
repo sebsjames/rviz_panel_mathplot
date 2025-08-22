@@ -48,9 +48,32 @@
 
 class QOpenGLWidget;
 class QLayout;
+// forward declaration of viswidget_mx
+namespace mplot::qt
+{
+    template<int widget_index>
+    struct viswidget_mx;
+}
 
 namespace rviz_panel_mathplot
 {
+    class MathplotPanel;
+
+    template<int widget_index>
+    struct panel_viswidget : public mplot::qt::viswidget_mx<widget_index>
+    {
+        panel_viswidget (QWidget* parent = 0);
+        // These are the methods we're sub-classing to incorporate
+#if 0
+        void set_panelparent (MathplotPanel *pp);
+#endif
+#if 1
+        void getlock();
+        void releaselock();
+#endif
+        MathplotPanel* panelparent = nullptr;
+    };
+
     class MathplotPanel : public rviz_common::Panel
     {
         Q_OBJECT
@@ -60,18 +83,24 @@ namespace rviz_panel_mathplot
 
         void onInitialize() override;
 
+        // Want thread locking callbacks
+        //void get_threadlock (void* p);
+        //void release_threadlock (void* p);
+
     protected:
         std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
         rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
 
+        // Would like VisualizationManager pointer here too
+
         void topicCallback (const std_msgs::msg::String& msg);
 
-        // Initialise your mplot::viswidget. In this example, one widget is created and
+        // Initialise your viswidget. In this example, one widget is created and
         // added to a layout.
         void viswidget_init (QLayout* owner_layout);
 
-        // A pointer to your mplot::qt::viswidget, which is a part of your overall Qt Window
+        // A pointer (in Qt-speak) to your viswidget, which is a part of your overall Qt Window
         QOpenGLWidget* p_vw = nullptr;
         QLabel* label_;
         QPushButton* button_;
