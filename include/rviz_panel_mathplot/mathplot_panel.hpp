@@ -48,33 +48,10 @@
 
 class QOpenGLWidget;
 class QLayout;
-// forward declaration of viswidget_mx
-namespace mplot::qt
-{
-    template<int widget_index>
-    struct viswidget_mx;
-}
 
 namespace rviz_panel_mathplot
 {
-    class MathplotPanel;
-
-    template<int widget_index>
-    struct panel_viswidget : public mplot::qt::viswidget_mx<widget_index>
-    {
-        panel_viswidget (QWidget* parent = 0);
-        // These are the methods we're sub-classing to incorporate
-#if 0
-        void set_panelparent (MathplotPanel *pp);
-#endif
-#if 1
-        void getlock();
-        void releaselock();
-#endif
-        MathplotPanel* panelparent = nullptr;
-    };
-
-    class MathplotPanel : public rviz_common::Panel
+    class MathplotPanel : public rviz_common::Panel // Panel derives from QWidget
     {
         Q_OBJECT
     public:
@@ -82,10 +59,6 @@ namespace rviz_panel_mathplot
         ~MathplotPanel() override;
 
         void onInitialize() override;
-
-        // Want thread locking callbacks
-        //void get_threadlock (void* p);
-        //void release_threadlock (void* p);
 
     protected:
         std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
@@ -110,6 +83,11 @@ namespace rviz_panel_mathplot
 
     private Q_SLOTS:
         void buttonActivated();
+        // These are signals that the viswidget may emit
+        void aboutToCompose();
+        void aboutToResize();
+        void frameSwapped();
+        void resized();
     };
 
 }  // namespace rviz_panel_mathplot

@@ -118,49 +118,32 @@ namespace rviz_panel_mathplot
         // Change the graphlocn so that the next graph shows up in a different place
         this->graphlocn[1] += 1.2f;
     }
-
-    //void MathplotPanel::get_threadlock (void* p) { reinterpret_cast<MathplotPanel*>(p)->getDisplayContext()->lockRender(); }
-    //void MathplotPanel::release_threadlock (void* p) { reinterpret_cast<MathplotPanel*>(p)->getDisplayContext()->unlockRender(); }
+    void MathplotPanel::aboutToCompose(){ std::cout << __func__ << std::endl; }
+    void MathplotPanel::aboutToResize(){ std::cout << __func__ << std::endl; }
+    void MathplotPanel::frameSwapped(){ std::cout << __func__ << std::endl; }
+    void MathplotPanel::resized(){ std::cout << __func__ << std::endl; }
 
     void MathplotPanel::viswidget_init (QLayout* owner_layout)
     {
         // Create widget. Seems to open in its own window with a new context.
-        rviz_panel_mathplot::panel_viswidget<VWID>* vw = new rviz_panel_mathplot::panel_viswidget<VWID> (this->parentWidget());
+        mplot::qt::viswidget_mx<VWID>* vw = new mplot::qt::viswidget_mx<VWID> (this->parentWidget());
         // Choose lighting effects if you want
         vw->v.lightingEffects();
-
-        // Set a callback in the viswidget so that it can call lockRender and unlockRender
-        //vw->threadlock_parent = reinterpret_cast<void*>(this);
-        //vw->get_threadlock = &rviz_panel_mathplot::MathplotPanel::get_threadlock;
-        //vw->release_threadlock = &rviz_panel_mathplot::MathplotPanel::release_threadlock;
-        // Perhaps I need to extend viswidget_mx so that it knows what a MathplotPanel
-        // is? Then it could have access to getDisplayContext without callbacks.
-
         // Add the OpenGL widget to the UI.
         owner_layout->addWidget (vw);
         // Keep a copy of vw
         this->p_vw = vw;
+
+        // Connect signals emitted by viswidget up to the slots we define in this class
+        //QObject::connect (vw, &mplot::qt::viswidget_mx<VWID>::aboutToCompose, // all the time
+        //                  this, &MathplotPanel::aboutToCompose);
+        QObject::connect (vw, &mplot::qt::viswidget_mx<VWID>::aboutToResize,
+                          this, &MathplotPanel::aboutToResize);
+        //QObject::connect (vw, &mplot::qt::viswidget_mx<VWID>::frameSwapped, // all the time
+        //                  this, &MathplotPanel::frameSwapped);
+        QObject::connect (vw, &mplot::qt::viswidget_mx<VWID>::resized,
+                          this, &MathplotPanel::resized);
     }
-
-    template<int widget_index>
-    panel_viswidget<widget_index>::panel_viswidget (QWidget* parent) : mplot::qt::viswidget_mx<widget_index>(parent) {}
-
-#if 0
-    template<int widget_index>
-    panel_viswidget<widget_index>::set_panelparent (rviz_panel_mathplot::MathplotPanel *pp)
-    {
-        panelparent = pp;
-    }
-#endif
-#if 1
-    template<int widget_index>
-    panel_viswidget<widget_index>::getlock()
-    { if (this->panelparent) { this->panelparent->getDisplayContext()->lockRender(); } }
-
-    template<int widget_index>
-    panel_viswidget<widget_index>::releaselock()
-    { if (this->panelparent) { this->panelparent->getDisplayContext()->unlockRender(); } }
-#endif
 
 }  // namespace rviz_panel_mathplot
 
